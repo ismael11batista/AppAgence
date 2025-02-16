@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lead Orchestrator</title>
+    <link rel="icon" type="image/png" href="../images/client.png" />
+    <style>
+      /* Reset e configurações iniciais */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        font-size: 16px;
+        zoom: 1;
+        font-family: "Roboto", sans-serif;
+        height: 100%;
+        min-height: 100vh;
+      }
+      body {
+        font-family: "Roboto", sans-serif;
+        background: linear-gradient(0deg, #000000, #080808);
+        padding: 10px;
+        color: rgba(255, 255, 255, 0.605);
+        overflow-x: hidden;
+      }
+
+      /* Tiras laterais decorativas */
+      .tira-esquerda {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        width: 40px;
+        left: 0;
+        z-index: 1000;
+        background-image: radial-gradient(
+          circle,
+          #252525 1.2px,
+          transparent 1px
+        );
+        background-size: 10px 10px;
+      }
+      .tira-direita {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        width: 40px;
+        right: 0;
+        z-index: 1000;
+        background-image: radial-gradient(
+          circle,
+          #252525 1.2px,
+          transparent 1px
+        );
+        background-size: 10px 10px;
+      }
+
+      /* Container principal */
+      .container {
+        max-width: 1850px;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* Área de texto */
+      textarea.textarea {
+        background-color: #0d0d0d;
+        font-size: xx-large;
+        color: rgba(255, 255, 255, 0.605);
+        width: 95%;
+        padding: 10px;
+        margin: 20px;
+        border: 5px solid rgba(255, 255, 255, 0.605);
+        border-radius: 10px;
+        resize: none;
+        height: 280px;
+        margin-bottom: 15px;
+      }
+
+      /* Layout padrão dos botões */
+      .buttons-row {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        width: 100%;
+        margin: 20px 0;
+      }
+      .btn-adicionar,
+      .btn-adicionar2,
+      .btn-adicionar3 {
+        padding: 10px 15px;
+        background-color: #0d0d0d;
+        color: #ffffff9a;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        font-family: "Roboto", sans-serif;
+        font-weight: bold;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+      .btn-adicionar:hover,
+      .btn-adicionar2:hover,
+      .btn-adicionar3:hover {
+        background-color: #1b1b1b;
+        transform: translateY(-2px);
+      }
+      .btn-adicionar {
+        min-width: 150px;
+      }
+      .btn-adicionar2 {
+        min-width: 180px;
+      }
+      .btn-adicionar3 {
+        min-width: 480px;
+      }
+      .button-content {
+        display: flex;
+        align-items: center;
+      }
+      .button-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 15px;
+      }
+
+      /* Seções de Informações e Resultados */
+      .info-principal {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        width: 100%;
+        padding: 0 10%;
+        gap: 20px; /* espaço entre seções */
+        margin-bottom: 20px;
+      }
+      .detalhes-lead,
+      .resultado,
+      .info-adicional,
+      .containerLeadAutomatico {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        width: 100%;
+        color: rgba(255, 255, 255, 0.605);
+        margin-bottom: 20px;
+      }
+      .resultado {
+        border-radius: 10px;
+        padding: 15px;
+        background: transparent;
+      }
+      /* Áreas informativas com fundo e espaçamento interno maior */
+      .info-div,
+      .info-div2 {
+        background: #0d0d0d;
+        border-radius: 10px;
+        padding: 15px;
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      /* Importante: Permitir que as quebras de linhas sejam respeitadas */
+      .containerLeadAutomatico {
+        white-space: pre-wrap;
+      }
+
+      /* Área de Consultores */
+      .consultores {
+        display: flex;
+        max-width: 1900px;
+        flex-direction: row;
+        justify-content: space-around;
+        gap: 20px;
+        margin: 0 auto 20px auto;
+        font-size: 30px;
+      }
+      .column {
+        flex: 1;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.605);
+        border: none;
+        border-radius: 10px;
+        text-align: center;
+        padding: 10px;
+      }
+
+      /* Botões fixos para outras ações (ChatGPT, Whatsapp, etc.) */
+      .ChatGPT-btn,
+      .whatsapp-btn,
+      .question-btn,
+      .copy-btn {
+        position: fixed;
+        width: auto;
+        z-index: 1;
+        transition: transform 0.3s ease;
+      }
+      .ChatGPT-btn {
+        right: 3%;
+        top: 70%;
+        height: 65px;
+      }
+      .ChatGPT-btn:hover {
+        transform: translateY(-5px);
+      }
+      .whatsapp-btn {
+        right: 3%;
+        top: 80%;
+        height: 60px;
+      }
+      .whatsapp-btn:hover {
+        transform: translateY(-5px);
+      }
+      .question-btn {
+        right: 3%;
+        top: 90%;
+        height: 60px;
+      }
+      .question-btn:hover {
+        transform: translateY(-5px);
+      }
+      .copy-btn {
+        left: 3%;
+        height: 60px;
+      }
+      #copiarS2 .copy-btn {
+        top: 92%;
+        height: 32px;
+      }
+      #copiarS4 .copy-btn {
+        top: 82%;
+      }
+
+      /* Container fixo para Lead FaleCom e Linkedin */
+      .fixed-bottom-buttons {
+        position: fixed;
+        bottom: 340px;
+        left: 10%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 500px;
+        z-index: 1000;
+      }
+
+      /* Para a segunda linha de botões – exibição em coluna (um por linha) */
+      .buttons-column {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+        margin: 20px 0;
+        align-items: center;
+      }
+
+      /* Layout responsivo para celulares: botões em duas colunas (na primeira linha) */
+      @media (max-width: 768px) {
+        .info-principal {
+          flex-direction: column;
+        }
+        .buttons-row {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 20px;
+          max-height: calc(4 * 60px + 3 * 20px);
+          overflow-y: auto;
+        }
+        .btn-adicionar,
+        .btn-adicionar2,
+        .btn-adicionar3 {
+          width: 100%;
+          height: 60px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Botões fixos para ações do ChatGPT, Whatsapp e Perguntas padrão -->
+    <a href="#" onclick="copiarPromptGPT()">
+      <img
+        src="../images/chatgpt.png"
+        alt="Prompt ChatGPT"
+        class="ChatGPT-btn"
+      />
+    </a>
+    <a href="#" onclick="copiarLinkWhatsapp()">
+      <img
+        src="../images/whatsapp.png"
+        alt="Link Whatsapp"
+        class="whatsapp-btn"
+      />
+    </a>
+    <a href="#" onclick="copiarPerguntasDefault()">
+      <img
+        src="../images/question.png"
+        alt="Cópia das perguntas padrão"
+        class="question-btn"
+      />
+    </a>
+    <a href="#" id="copiarS2">
+      <img src="../images/agence2.png" alt="Copiar S2" class="copy-btn" />
+    </a>
+    <a href="#" id="copiarS4">
+      <img src="../images/cn.png" alt="Copiar S4" class="copy-btn" />
+    </a>
+
+    <!-- Seção de Consultores -->
+    <div class="consultores">
+      <div id="column1" class="column">🔍 Buscando CN da vez...</div>
+      <div id="column2" class="column"></div>
+      <div id="column3" class="column"></div>
+      <div id="column4" class="column"></div>
+    </div>
+
+    <!-- Container principal -->
+    <div class="container">
+      <textarea id="inputText" class="textarea"></textarea>
+
+      <!-- Primeira linha de botões (exceto Lead FaleCom e Linkedin) -->
+      <div class="buttons-row">
+        <button class="btn-adicionar2" onclick="PesquisarLinkedin()">
+          <span class="button-content">
+            <img
+              src="../images/linkedin-profile.png"
+              alt="LinkedIn"
+              class="button-icon"
+            />
+            <span class="button-text">Pesquisar Linkedin</span>
+          </span>
+        </button>
+        <button class="btn-adicionar2" onclick="SiteDaEmpresa()">
+          <span class="button-content">
+            <img src="../images/web.png" alt="Web" class="button-icon" />
+            <span class="button-text">Site da Empresa</span>
+          </span>
+        </button>
+        <button class="btn-adicionar" onclick="copiarEmpresa()">
+          Nome da Empresa
+        </button>
+        <button class="btn-adicionar" onclick="copiarNome()">
+          Nome do Contato
+        </button>
+        <button class="btn-adicionar" onclick="copiarTelefone()">
+          Telefone
+        </button>
+        <button class="btn-adicionar" onclick="copiarEmail()">E-mail</button>
+        <button class="btn-adicionar" onclick="copiarAssunto()">Assunto</button>
+        <button class="btn-adicionar" onclick="copiarLocalidade()">
+          Localidade
+        </button>
+      </div>
+    </div>
+
+    <!-- Containers fixos para LeadFaleCom e Linkedin -->
+    <div class="fixed-bottom-buttons">
+      <button class="btn-adicionar" onclick="copiarLinkedin()">
+        <span class="button-content">
+          <img
+            src="../images/linkedin.png"
+            alt="LinkedIn"
+            class="button-icon"
+          />
+          <span class="button-text">Linkedin</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- Segunda linha de botões em coluna -->
+    <div class="container">
+      <div class="buttons-column">
+        <button onclick="copiarTextoLeadConsultor()" class="btn-adicionar3">
+          Aviso Lead Consultor
+        </button>
+        <button onclick="copiarInformacoesEconodata()" class="btn-adicionar3">
+          <img src="../images/econodata2.png" id="econodata" alt="Econodata" />
+        </button>
+        <button onclick="copiarTextoLeadFilaA()" class="btn-adicionar3">
+          Aviso Lead Fila A
+        </button>
+      </div>
+
+      <!-- Seções de Informações -->
+      <div class="info-principal">
+        <div class="detalhes-lead">
+          <div id="detalhesLead" class="containerLeadAutomatico">
+            Chegou lead para você.<br /><br />
+            Contato: não informado<br />
+            Empresa: não informado<br />
+            E-mail: não informado<br />
+            Telefone: não informado<br />
+            Interesse: não informado<br />
+            Origem: não identificada<br /><br />
+            Assunto: não encontrado
+          </div>
+        </div>
+        <div class="info-adicional"></div>
+        <div class="containerLeadAutomatico">
+          <div id="resultado" class="resultado">
+            Chegou lead na Fila A para o @<br /><br />
+            Contato: não informado<br />
+            Empresa: não informado<br />
+            Telefone: não informado<br />
+            Interesse: não informado<br />
+            Origem: não identificada<br /><br />
+            Site da Empresa: www.undefined<br /><br />
+            Linkedin: ainda não identificado<br />
+            --------------------------------------------------------<br />
+            Próximo da fila é o @
+          </div>
+        </div>
+      </div>
+
+      <!-- Container para detalhes adicionais -->
+      <div class="info-container-duplo">
+        <div id="interesseLead" class="info-div2">Interesse: não informado</div>
+        <div id="origemLead" class="info-div2">Origem: não identificada</div>
+        <div id="porteLead" class="info-div2">
+          Porte da Empresa: não informado
+        </div>
+      </div>
+    </div>
+
+    <script src="leads.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script>
+      function ajustarZoom() {
+        const larguraBase = 1920;
+        const larguraAtual = window.innerWidth;
+        const nivelZoom = larguraAtual / larguraBase;
+        const zoomMin = 0.5;
+        const zoomMax = 0.9;
+        const zoomFinal = Math.min(Math.max(nivelZoom, zoomMin), zoomMax);
+        document.body.style.zoom = zoomFinal;
+      }
+      window.addEventListener("load", ajustarZoom);
+      window.addEventListener("resize", ajustarZoom);
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const apiKey = "AIzaSyCCaW-e21Rn5F8ziL1HSsozZgJrtmOI6Hg";
+        const spreadsheetId = "1FwDn3RSuCZDpMl4QdjcL9gFr5cek1mlYWqCcqrjBDFY";
+        const ranges = [
+          "Leads!R1",
+          "Leads!R2",
+          "Leads!R3",
+          "Leads!R4",
+          "Leads!S2",
+          "Leads!S4",
+        ];
+
+        function initClient() {
+          gapi.client
+            .init({
+              apiKey: apiKey,
+              discoveryDocs: [
+                "https://sheets.googleapis.com/$discovery/rest?version=v4",
+              ],
+            })
+            .then(
+              function () {
+                getSheetData();
+                setInterval(getSheetData, 10000);
+                setupCopyButtons();
+              },
+              function (error) {
+                console.error(
+                  "Erro ao inicializar a API do Google Sheets:",
+                  error
+                );
+                const dataDiv = document.getElementById("data");
+                dataDiv.textContent = "Erro ao carregar dados.";
+              }
+            );
+        }
+
+        function getSheetData() {
+          gapi.client.sheets.spreadsheets.values
+            .batchGet({
+              spreadsheetId: spreadsheetId,
+              ranges: ranges,
+            })
+            .then(function (response) {
+              const responses = response.result.valueRanges;
+              const ProximoFilaA = responses[0].values
+                ? responses[0].values[0][0]
+                : "Não encontrado";
+              const ProximoFilaB = responses[1].values
+                ? responses[1].values[0][0]
+                : "Não encontrado";
+              const ProximoFilaLicitacao = responses[2].values
+                ? responses[2].values[0][0]
+                : "Não encontrado";
+              const ProximoFilaD = responses[3].values
+                ? responses[3].values[0][0]
+                : "Não encontrado";
+              window.s2Value = responses[4].values
+                ? responses[4].values[0][0]
+                : "";
+              window.s4Value = responses[5].values
+                ? responses[5].values[0][0]
+                : "";
+
+              document.getElementById(
+                "column1"
+              ).innerHTML = `<p>✅ Fila A: ${ProximoFilaA}</p>`;
+              document.getElementById(
+                "column2"
+              ).innerHTML = `<p>☑️ Fila B: ${ProximoFilaB}</p>`;
+              document.getElementById(
+                "column3"
+              ).innerHTML = `<p>📑 Licitação: ${ProximoFilaLicitacao}</p>`;
+              document.getElementById(
+                "column4"
+              ).innerHTML = `<p>✅ Outbound: ${ProximoFilaD}</p>`;
+            })
+            .catch(function (error) {
+              console.error("Erro ao buscar dados da planilha:", error);
+              document.getElementById("column1").textContent =
+                "Erro ao carregar dados.";
+              document.getElementById("column2").textContent =
+                "Erro ao carregar dados.";
+              document.getElementById("column3").textContent =
+                "Erro ao carregar dados.";
+              document.getElementById("column4").textContent =
+                "Erro ao carregar dados.";
+            });
+        }
+
+        function setupCopyButtons() {
+          document
+            .getElementById("copiarS2")
+            .addEventListener("click", function (e) {
+              e.preventDefault();
+              copyToClipboard(window.s2Value);
+            });
+          document
+            .getElementById("copiarS4")
+            .addEventListener("click", function (e) {
+              e.preventDefault();
+              copyToClipboard(window.s4Value);
+            });
+        }
+
+        function copyToClipboard(text) {
+          navigator.clipboard.writeText(text).then(
+            function () {
+              console.log("Texto copiado com sucesso");
+            },
+            function (err) {
+              console.error("Erro ao copiar texto: ", err);
+            }
+          );
+        }
+
+        gapi.load("client", initClient);
+      });
+    </script>
+  </body>
+</html>
